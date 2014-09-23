@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx">
+
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			public var dotArray:ArrayList;
+			[Bindable]
+			private var population:ArrayCollection = new ArrayCollection();
+			private var calculator:GACalculator;
+
+			private function startClickHandler():void {
+				createPopulation();
+			}
+
+			private function createPopulation():void {
+				if (dotArray.source.length > 0) {
+					calculator = new GACalculator(dotArray);
+					population = calculator.population;
+				}
+			}
+
+			private function labelFunction(creatureArray:Array):String {
+				var out:String = "";
+				for each (var dot:Dot in creatureArray) {
+					out += dot.number + ", ";
+				}
+				return GACalculator.fitness(creatureArray) + " " + out + " " + creatureArray.length;
+			}
+
+			private function nextClickHandler():void {
+				if (!calculator) {
+					createPopulation();
+				}
+				calculator.generateNewPopulation();
+				dispatchEvent(new BestWayReady(population.getItemAt(0) as Array));
+			}
+
+			private function goClickHandler():void {
+				if (calculator) {
+					calculator.findTheBestWay();
+					dispatchEvent(new BestWayReady(population.getItemAt(0) as Array));
+				}
+			}
+
+			private function GACalculatorParamsChangeHandler():void {
+				GACalculator.creatureMutationPart = parseFloat(creatureMutationPart.text);
+				GACalculator.populationMutationPart = parseFloat(populationMutationPart.text);
+				GACalculator.populationSize = parseFloat(populationSize.text);
+			}
+
+			private function fitnessLabelFunction(item:Array,
+					col:DataGridColumn):String {
+				return GACalculator.fitness(item).toString();
+			}
+
+			private function dotsLabelFunction(item:Array,
+					col:DataGridColumn):String {
+				return getStringByDots(item);
+			}
+
+			private function getStringByDots(array:Array):String {
+				var out:String = "";
+				for (var i:int = 0; i < array.length; i++) {
+					out += Dot(array[i]).number + ", ";
+				}
+				return out;
+			}
+
+
+			private function itemClickHandler(event:ListEvent):void {
+				selectedItemTI.text = getStringByDots(event.itemRenderer.data as Array);
+				dispatchEvent(new BestWayReady(event.itemRenderer.data as Array));
+			}
+		]]>
+	</fx:Script>
+	<fx:Metadata>
+		[Event(name="bestWayReady", type="BestWayReady")]
+	</fx:Metadata>
+	<s:Panel title="GA panel" styleName="panelGroup">
+		<s:layout>
+			<s:HorizontalLayout paddingBottom="5"
+				paddingLeft="5"
+				paddingRight="5"
+				paddingTop="5" />
+		</s:layout>
+		<s:VGroup>
+			<s:Group>
+				<s:layout>
+					<s:VerticalLayout paddingBottom="5"
+						paddingLeft="5"
+						paddingRight="5"
+						paddingTop="5" />
+				</s:layout>
+				<mx:DataGrid dataProvider="{population}"
+					height="400"
+					width="200"
+					itemClick="itemClickHandler(event)">
+					<mx:columns>
+						<mx:DataGridColumn dataField="Fitness"
+							width="60"
+							labelFunction="fitnessLabelFunction" />
+						<mx:DataGridColumn dataField="Dots"
+							labelFunction="dotsLabelFunction" />
+					</mx:columns>
+				</mx:DataGrid>
+				<s:TextInput editable="false"
+					id="selectedItemTI" />
+			</s:Group>
+		</s:VGroup>
+		<s:VGroup>
+			<s:BorderContainer styleName="gaControlPanelGroup">
+				<s:layout>
+					<s:VerticalLayout paddingBottom="5"
+						paddingLeft="5"
+						paddingRight="5"
+						paddingTop="5" />
+				</s:layout>
+				<s:Button label="Create population"
+					click="startClickHandler()" />
+				<s:Button label="Next step"
+					click="nextClickHandler()" />
+				<s:Button label="Find the best way"
+					click="goClickHandler()" />
+			</s:BorderContainer>
+			<s:BorderContainer styleName="gaControlPanelGroup">
+				<s:layout>
+					<s:VerticalLayout paddingBottom="5"
+						paddingLeft="5"
+						paddingRight="5"
+						paddingTop="5" />
+				</s:layout>
+				<s:Label text="Creature mutation part" />
+				<s:TextInput text="{GACalculator.creatureMutationPart}"
+					enter="GACalculatorParamsChangeHandler()"
+					id="creatureMutationPart" />
+				<s:Label text="Population mutation part" />
+				<s:TextInput text="{GACalculator.populationMutationPart}"
+					enter="GACalculatorParamsChangeHandler()"
+					id="populationMutationPart" />
+				<s:Label text="Population size" />
+				<s:TextInput text="{GACalculator.populationSize}"
+					enter="GACalculatorParamsChangeHandler()"
+					id="populationSize" />
+				<s:Button label="Apply params"
+					click="GACalculatorParamsChangeHandler()" />
+			</s:BorderContainer>
+		</s:VGroup>
+	</s:Panel>
+</s:Group>

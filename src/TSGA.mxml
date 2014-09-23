@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	minWidth="955"
+	minHeight="600"
+	xmlns:instrumentPanel="instrumentPanel.*"
+	xmlns:workSpace="workSpace.*"
+	xmlns:GA="GA.*">
+	<fx:Style source="../assets/default.css" />
+
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayList;
+			[Bindable]
+			private var selectedDot:Dot;
+			[Bindable]
+			private var selectedLine:Line;
+			[Bindable]
+			private var dotArray:ArrayList = new ArrayList();
+
+			private function bestWayReadyHandler(event:BestWayReady):void {
+				dotSpace.showTheBestWay(event.way);
+			}
+		]]>
+	</fx:Script>
+	<s:Rect width="100%"
+			height="100%">
+		<s:fill>
+			<s:BitmapFill source="@Embed('../assets/graphics/back.png')"
+						  fillMode="repeat" />
+		</s:fill>
+	</s:Rect>
+	
+	<s:HGroup>
+		<s:Panel title="Workspace" styleName="panelGroup">
+			<s:layout>
+				<s:VerticalLayout paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" />
+			</s:layout>
+			<instrumentPanel:InstrumentPanel selectedDot="@{selectedDot}"
+				selectedLine="@{selectedLine}" />
+			<workSpace:WorkSpace selectedDot="@{selectedDot}"
+				selectedLine="@{selectedLine}"
+				dotArray="@{dotArray}"
+				id="dotSpace" />
+		</s:Panel>
+		<GA:GAInstrumentGroup dotArray="{dotArray}"
+			bestWayReady="bestWayReadyHandler(event)" />
+	</s:HGroup>
+</s:Application>

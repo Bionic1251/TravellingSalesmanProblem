@@ -1,0 +1,13 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+.gaControlPanelGroup{
+	cornerRadius: 10;
+	borderWeight: 2;
+	borderColor: #CDC9C9;
+	backgroundColor: #CDC9C9;
+}
+.panelGroup{
+	backgroundColor: #EEE9E9;
+}

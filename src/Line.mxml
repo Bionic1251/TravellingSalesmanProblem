@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx">
+
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Text;
+
+			public static const DEFAULT_ALPHA:Number = 0.6;
+			public static const SELECTED_ALPHA:Number = 1;
+			public static const LINE_TYPE_USUAL:String = "usual";
+			public static const LINE_TYPE_SPECIAL:String = "special";
+			[Bindable]
+			private var x1:Number = 0;
+			[Bindable]
+			private var x2:Number = 0;
+			[Bindable]
+			private var y1:Number = 0;
+			[Bindable]
+			private var y2:Number = 0;
+			[Bindable]
+			public var text:String;
+			private var dot1:Dot;
+			private var dot2:Dot;
+			private var _lineType:String = LINE_TYPE_USUAL;
+
+			public function setDots(dot1:Dot, dot2:Dot):void {
+				dot1.addLine(this);
+				dot2.addLine(this);
+				this.dot1 = dot1;
+				this.dot2 = dot2;
+				x1 = dot1.x + Dot.DOT_SIZE / 2;
+				y1 = dot1.y + Dot.DOT_SIZE / 2;
+				x2 = dot2.x + Dot.DOT_SIZE / 2;
+				y2 = dot2.y + Dot.DOT_SIZE / 2;
+				setLabelParams();
+			}
+
+			public function resetDots():void {
+				setDots(dot1, dot2);
+			}
+
+			public function isDotUsed(dot:Dot):Boolean {
+				if (dot1 == dot || dot2 == dot) {
+					return true;
+				}
+				return false;
+			}
+
+			private function setLabelParams():void {
+				setDistance();
+				setTIPosition();
+			}
+
+			private function setDistance():void {
+				var widthSQR:Number = Math.pow(x1 - x2, 2);
+				var heightSQR:Number = Math.pow(y1 - y2, 2);
+				var distance:int = Math.round(Math.sqrt(widthSQR + heightSQR));
+				text = distance.toString();
+			}
+
+			private function setTIPosition():void {
+				lineLabel.x = getCenterInterval(x1, x2);
+				lineLabel.y = getCenterInterval(y1, y2);
+			}
+
+			private function getCenterInterval(v1:Number, v2:Number):Number {
+				var minV:Number = Math.min(v1, v2);
+				var delta:Number = Math.abs(v1 - v2);
+				return minV + delta / 2;
+			}
+
+			private function clickHandler():void {
+				dispatchEvent(new LineClickEvent(LineClickEvent.LINE_CLICKED,
+						this));
+			}
+
+			public function set lineType(value:String):void {
+				if (value == LINE_TYPE_SPECIAL) {
+					stroke.weight = 3;
+					stroke.color = 0xe0368e;
+				} else if (value == LINE_TYPE_USUAL) {
+					stroke.weight = 1;
+					stroke.color = 0x000000;
+				}
+				_lineType = value;
+			}
+
+			public function get lineType():String {
+				return _lineType;
+			}
+		]]>
+	</fx:Script>
+
+	<fx:Metadata> 
+		[Event(name="lineClicked", type="LineClickEvent")] 
+	</fx:Metadata>
+	<s:Label id="lineLabel"
+		text="{text}"
+		click="clickHandler()" />
+	<s:Line id="line"
+		xFrom="{x1}"
+		xTo="{x2}"
+		yFrom="{y1}"
+		yTo="{y2}">
+		<s:stroke>
+			<s:SolidColorStroke color="0x000000"
+				weight="1"
+				id="stroke" />
+		</s:stroke>
+	</s:Line>
+</s:Group>

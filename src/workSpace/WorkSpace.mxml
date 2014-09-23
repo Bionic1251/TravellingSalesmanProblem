@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx">
+	<fx:Script>
+		<![CDATA[
+			import GA.GACalculator;
+
+			import mx.collections.ArrayList;
+			import mx.controls.Image;
+			import mx.core.DragSource;
+			import mx.events.DragEvent;
+			import mx.managers.DragManager;
+
+			[Bindable]
+			public var selectedDot:Dot;
+			[Bindable]
+			public var selectedLine:Line;
+			[Bindable]
+			public var dotArray:ArrayList;
+			[Bindable]
+			private var lineArray:ArrayList = new ArrayList();
+
+			private const DOT_SIZE:int = 10;
+
+			private function dragEnterHandler(event:DragEvent):void {
+				if (event.dragSource.hasFormat(Dot.NEW_DOT) ||
+						event.dragSource.hasFormat(Dot.OLD_DOT)) {
+					DragManager.acceptDragDrop(BorderContainer(event.currentTarget));
+				}
+			}
+
+			private function mouseMoveHandler(event:MouseEvent):void {
+				var dragInitiator:Dot = Dot(event.currentTarget);
+				var ds:DragSource = new DragSource();
+				ds.addData(dragInitiator, Dot.OLD_DOT);
+				DragManager.doDrag(dragInitiator, ds, event, new Dot(), 0, 0);
+			}
+
+			private function getNewDot(x:int, y:int):Dot {
+				var dot:Dot = new Dot();
+				dot.x = x;
+				dot.y = y;
+				dot.addEventListener(MouseEvent.CLICK, dotClickHandler, false,
+						0, true);
+				dot.addEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler,
+						false, 0, true);
+				dot.addEventListener(KeyboardEvent.KEY_DOWN, dotKeyDownHandler,
+						false, 0, true);
+				return dot;
+			}
+
+			private function dotKeyDownHandler(e:KeyboardEvent):void {
+				if (e.keyCode == Keyboard.DELETE) {
+					deleteDot(selectedDot);
+					selectedDot = null;
+				}
+			}
+
+			private function deleteDot(dot:Dot):void {
+				deleteLinesByDot(dot);
+				dotArray.removeItem(dot);
+				container.removeElement(dot);
+			}
+
+			private function deleteLinesByDot(dot:Dot):void {
+				for (var i:int = 0; i < lineArray.source.length; i++) {
+					if (Line(lineArray.getItemAt(i)).isDotUsed(dot)) {
+						removeLine(Line(lineArray.getItemAt(i)));
+						i--;
+					}
+				}
+			}
+
+			private function removeLine(line:Line):void {
+				container.removeElement(line);
+				lineArray.removeItem(line);
+			}
+
+			private function printArray():void {
+				trace("print");
+				for each (var line:Line in lineArray.source) {
+					trace("element");
+				}
+			}
+
+			private function dragDropHandler(event:DragEvent):void {
+				if (event.dragSource.hasFormat(Dot.NEW_DOT)) {
+					var newDot:Dot = getNewDot(event.localX, event.localY);
+					addLines(newDot);
+					dotArray.addItem(newDot);
+					container.addElement(newDot);
+					selectDot(newDot);
+				} else if (event.dragSource.hasFormat(Dot.OLD_DOT)) {
+					var dot:Dot = Dot(event.dragInitiator);
+					dot.x = event.localX;
+					dot.y = event.localY;
+					redrawLines(dot);
+				}
+			}
+
+			private function dotClickHandler(event:MouseEvent):void {
+				selectDot(Dot(event.currentTarget));
+			}
+
+			private function selectDot(dot:Dot):void {
+				if (selectedDot) {
+					selectedDot.alpha = Dot.DEFAULT_ALPHA;
+				}
+				selectedDot = dot;
+				selectedDot.alpha = Dot.SELECTED_ALPHA;
+				selectedDot.setFocus();
+			}
+
+			private function addLines(dot:Dot):void {
+				for each (var element:Dot in dotArray.source) {
+					if (element != dot) {
+						addLine(element, dot);
+					}
+				}
+			}
+
+			private function addLine(dot1:Dot, dot2:Dot):void {
+				var line:Line = new Line();
+				line.setDots(dot1, dot2);
+				line.alpha = Line.DEFAULT_ALPHA;
+				line.lineType = Line.LINE_TYPE_USUAL;
+				container.addElement(line);
+				lineArray.addItem(line);
+				line.addEventListener(LineClickEvent.LINE_CLICKED,
+						lineClickHandler);
+			}
+
+			private function lineClickHandler(event:LineClickEvent):void {
+				var line:Line = event.line;
+				if (selectedLine) {
+					selectedLine.alpha = Line.DEFAULT_ALPHA;
+				}
+				selectedLine = line;
+				selectedLine.alpha = Line.SELECTED_ALPHA;
+			}
+
+			private function redrawLines(dot:Dot):void {
+				for each (var line:Line in lineArray.source) {
+					if (line.isDotUsed(dot)) {
+						line.resetDots();
+					}
+				}
+			}
+
+			public function showTheBestWay(way:Array):void {
+				makeAllLinesUsual();
+				var line:Line;
+				for (var i:int = 1; i < way.length; i++) {
+					line = GACalculator.getLineByDots(Dot(way[i - 1]),
+							Dot(way[i]));
+					makeLineSpecial(line);
+				}
+				line = GACalculator.getLineByDots(Dot(way[0]),
+						Dot(way[way.length - 1]));
+				makeLineSpecial(line);
+			}
+
+			private function makeLineSpecial(line:Line):void {
+				if (line) {
+					line.lineType = Line.LINE_TYPE_SPECIAL;
+				}
+			}
+
+			private function makeAllLinesUsual():void {
+				var line:Line;
+				for each (line in lineArray.source) {
+					if (line.lineType != Line.LINE_TYPE_USUAL) {
+						line.lineType = Line.LINE_TYPE_USUAL;
+					}
+				}
+			}
+		]]>
+	</fx:Script>
+	<s:BorderContainer borderColor="0x000000"
+		borderWeight="1"
+		id="container"
+		width="500"
+		height="400"
+		dragEnter="dragEnterHandler(event)"
+		dragDrop="dragDropHandler(event)"
+		mask="{cpmask}" />
+
+	<s:Graphic id="cpmask">
+		<s:Rect width="{container.width}"
+			height="{container.height}">
+			<s:fill>
+				<s:SolidColor />
+			</s:fill>
+		</s:Rect>
+	</s:Graphic>
+</s:Group>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:HGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:graphic="graphic.*"
+	xmlns:local="*"
+	verticalAlign="middle">
+
+	<fx:Script>
+		<![CDATA[
+			import mx.core.DragSource;
+			import mx.events.FlexEvent;
+			import mx.managers.DragManager;
+
+			[Bindable]
+			public var selectedDot:Dot;
+			[Bindable]
+			public var selectedLine:Line;
+
+			private function mouseMoveHandler(event:MouseEvent):void {
+				var dragInitiator:BorderContainer = BorderContainer(event.currentTarget);
+				var ds:DragSource = new DragSource();
+				ds.addData(dragInitiator, Dot.NEW_DOT);
+				DragManager.doDrag(dragInitiator, ds, event, new Dot(), -10,
+						-10);
+			}
+
+			private function enterLineLenHandler():void {
+				if (selectedLine) {
+					selectedLine.text = parseInt(lineLen.text).toString();
+				}
+			}
+		]]>
+	</fx:Script>
+
+	<s:Label text="Line" />
+	<s:TextInput text="{selectedLine.text}"
+		enter="enterLineLenHandler()"
+		widthInChars="4"
+		id="lineLen" />
+	<s:Label text="Dot" />
+	<s:TextInput borderVisible="false"
+		widthInChars="3"
+		editable="false"
+		text="{selectedDot.x}" />
+	<s:TextInput borderVisible="false"
+		widthInChars="3"
+		editable="false"
+		text="{selectedDot.y}" />
+	<s:BorderContainer borderColor="0xCCCCCC"
+		borderWeight="1"
+		cornerRadius="10"
+		id="dotContainer"
+		width="30"
+		height="30"
+		mouseMove="mouseMoveHandler(event)">
+		<local:Dot verticalCenter="0"
+			horizontalCenter="0" alpha="{Dot.DEFAULT_ALPHA}" />
+	</s:BorderContainer>
+</s:HGroup>

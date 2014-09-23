@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Graphic xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	creationComplete="creationCompleteHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			public static const DEFAULT_ALPHA:Number = 0.6;
+			public static const SELECTED_ALPHA:Number = 1;
+			public static const NEW_DOT:String = "newDot";
+			public static const OLD_DOT:String = "oldDot";
+			public static const DOT_SIZE:int = 8;
+			[Bindable]
+			public var number:String;
+			public var lineArray:Array = new Array();
+
+			public function addLine(value:Line):void {
+				lineArray.push(value);
+			}
+
+			private function creationCompleteHandler(event:FlexEvent):void {
+				number = int(Math.random() * 100).toString();
+			}
+		]]>
+	</fx:Script>
+	<!--<s:Label text="{number}"
+		visible="{labelVisible}" />-->
+	<s:Ellipse height="{DOT_SIZE}"
+		width="{DOT_SIZE}"
+		id="circle">
+		<s:fill>
+			<s:SolidColor color="0x000000" />
+		</s:fill>
+	</s:Ellipse>
+</s:Graphic>
